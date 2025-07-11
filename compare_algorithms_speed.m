@@ -50,8 +50,8 @@ eng_sqrt = (M_mod==2)+(M_mod~=2)*sqrt((M_mod-1)/6*(2^2));
 %% delay-Doppler grid symbol placement
 
 % Time and frequency resources
-car_fre = 28*10^9;  % Carrier frequency
-delta_f = 625*10^3; % subcarrier spacing: 15 KHz
+car_fre = 5*10^9;  % Carrier frequency
+delta_f = 15*10^3; % subcarrier spacing: 15 KHz
 T = 1/delta_f;     % one time symbol duration in OTFS frame
 
 % k_max变化范围：从2到10，步长为2

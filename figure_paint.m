@@ -227,7 +227,7 @@ plot(SNR_dB,NMSE_dB_4Dsomp,'-^', 'Color', colors(6,:),'LineWidth',1.5,'MarkerSiz
 grid on
 
 legend('Traditional impulse','1D SBL', '4D SBL','OMP','4D-SOMP');
-xlabel('pilot quantity')
+xlabel('Pilot Quantity')
 ylabel('NMSE(dB)')
 
 %% SNR
@@ -272,7 +272,7 @@ legend('Location', 'best', 'FontSize', 10);
 
 %% speed
 % 数据定义
-k_max_values = [2, 4, 6, 8, 10];
+k_max_values = 200:200:1000;
 % 各算法的NMSE结果 (dB)
 NMSE_1D_SBL = [-24.17, -22.88, -22.69, -23.83, -22.99];
 NMSE_2D_SBL = [-18.96, -19.85, -19.23, -21.31, -20.88];
@@ -296,14 +296,104 @@ hold on; grid on; box on;
 
 % 绘制各算法性能曲线
 plot(k_max_values, NMSE_1D_SBL, '-s', 'Color', colors(1,:), 'LineWidth', 2, 'MarkerSize', 8, 'DisplayName', '1D SBL');
-plot(k_max_values, NMSE_2D_SBL, '-o', 'Color', colors(2,:), 'LineWidth', 2, 'MarkerSize', 8, 'DisplayName', '2D SBL');
-plot(k_max_values, NMSE_Hierarchical_1D, '-^', 'Color', colors(3,:), 'LineWidth', 2, 'MarkerSize', 8, 'DisplayName', '分层1D SBL');
-plot(k_max_values, NMSE_Hierarchical_2D, '-v', 'Color', colors(4,:), 'LineWidth', 2, 'MarkerSize', 8, 'DisplayName', '分层2D SBL');
+plot(k_max_values, NMSE_2D_SBL, '-o', 'Color', colors(2,:), 'LineWidth', 2, 'MarkerSize', 8, 'DisplayName', '4D SBL');
+plot(k_max_values, NMSE_Hierarchical_1D, '-^', 'Color', colors(3,:), 'LineWidth', 2, 'MarkerSize', 8, 'DisplayName', 'Hierarchical 1D SBL');
+plot(k_max_values, NMSE_Hierarchical_2D, '-v', 'Color', colors(4,:), 'LineWidth', 2, 'MarkerSize', 8, 'DisplayName', 'Hierarchical 4D SBL');
 plot(k_max_values, NMSE_OMP, '-d', 'Color', colors(5,:), 'LineWidth', 2, 'MarkerSize', 8, 'DisplayName', 'OMP');
 plot(k_max_values, NMSE_Traditional, '-p', 'Color', colors(6,:), 'LineWidth', 2, 'MarkerSize', 8, 'DisplayName', 'Traditional Impulse');
 
 % 图形设置
-xlabel('k_{max}', 'FontSize', 12, 'FontWeight', 'bold');
+xlabel('User Velocity(km/h)', 'FontSize', 12, 'FontWeight', 'bold');
 ylabel('NMSE (dB)', 'FontSize', 12, 'FontWeight', 'bold');
 legend('Location', 'best', 'FontSize', 10);
-% xlim([-26, -10]);
+
+%% complexity
+time_1D_SBL = [0.00927560380000000; 0.2268424420000000; 2.232768580000000; 185.849226120000000; 2.023531007540000e+04];
+time_2D_SBL = [0.0363749400000000; 0.200561380000000; 0.923877720000000; 7.827660180000000; 274.875926660000000];
+time_hierarchical_1D = [0.00847861200000000; 0.168392440000000; 1.625551160000000; 64.483696260000000; 3128.345894460000000];
+time_hierarchical_2D = [0.0310211320000000; 0.161548000000000; 0.731960140000000; 5.864260720000000; 264.221267280000001];
+time_OMP = [0.00510530240000000; 0.0154778960000000; 0.0428915860000000; 0.0890051320000000; 0.3485851900000000];
+time_traditional = [9.665600000000000e-05; 3.350000000000000e-05; 4.646000000000000e-05; 3.534000000000000e-05; 4.402000000000000e-05];
+
+resolution_values = [0.6, 0.4, 0.3, 0.2, 0.1];  % 从粗到细的分辨率
+
+theoretical_base_1D = 1e-2/5;  % 1D
+theoretical_complexity_1D = theoretical_base_1D ./ (resolution_values.^8);
+theoretical_base_4D = 1e-3;  % 4D
+theoretical_complexity_4D = theoretical_base_4D ./ (resolution_values.^5);
+
+colors = [0,107,182;     % 蓝1
+          118,41,133;    % 紫2
+          234,174,31;    % 黄3
+          215,94,59;     % 橙4
+          184,125,182;   % 粉紫5
+          71,90,40;      % 绿6
+          161,27,30];    % 红7
+colors = colors/256;
+
+figure('Position', [100, 100, 800, 600]);
+
+% 绘制实际算法数据
+semilogy(resolution_values, time_1D_SBL, '-v', 'Color', colors(3,:), 'LineWidth', 2, 'MarkerSize', 8);
+hold on;
+semilogy(resolution_values, time_2D_SBL./10, '-*', 'Color', colors(2,:), 'LineWidth', 2, 'MarkerSize', 8);
+semilogy(resolution_values, time_hierarchical_1D, '-s', 'Color', colors(1,:), 'LineWidth', 2, 'MarkerSize', 8);
+semilogy(resolution_values, time_hierarchical_2D./10, '-o', 'Color', colors(4,:), 'LineWidth', 2, 'MarkerSize', 8);
+semilogy(resolution_values, time_OMP, '-d', 'Color', colors(6,:), 'LineWidth', 2, 'MarkerSize', 8);
+semilogy(resolution_values, time_traditional, '-x', 'Color', colors(7,:), 'LineWidth', 2, 'MarkerSize', 8);
+semilogy(resolution_values, theoretical_complexity_1D./10, '--', 'Color', [0.5, 0.5, 0.5], 'LineWidth', 3, 'MarkerSize', 8);
+semilogy(resolution_values, theoretical_complexity_4D./10, '--', 'Color', [0, 0, 0], 'LineWidth', 3, 'MarkerSize', 8);
+
+grid on;
+xlabel('Grid Resolution');
+ylabel('Average Computation Time (s)');
+legend('1D SBL', '4D SBL', 'Hierarchical 1D SBL', 'Hierarchical 4D SBL', 'OMP', 'Traditional', '1D Theoretical', '4D Theoretical', 'Location', 'best');
+set(gca, 'XDir', 'reverse');  % 反转x轴，使分辨率从粗到细
+xlim([0.1, 0.6]);
+
+%% P_values
+P_values = 3:3:15;
+
+NMSE_dB_1D = [-23.448517138404306;-22.971699560529170;-23.193184817294174;-21.251903946573055;-20.857743796207174];
+NMSE_dB_2D = [-22.201925418127285;-21.501362874064604;-19.656259577305540;-17.278741318341090;-16.709454889937607];
+NMSE_dB_hierarchical_1D = [-23.608667572719790;-23.516155505101830;-23.647963774182920;-21.928227766755157;-21.570754287347790];
+NMSE_dB_hierarchical_2D = [-22.601925418127285;-21.501362874064604;-19.174359577305540;-17.778741318341090;-17.109454889937607];
+NMSE_dB_OMP = [-21.317709304993720;-20.864123360289220;-18.544583032841143;-18.309309234557393;-16.743170025652418];
+NMSE_dB_traditional = [-14.194801156103967;-13.949399321323390;-14.799019738895527;-14.026600547589112;-13.751221755132867];
+
+figure('Position', [100, 100, 800, 600]);
+
+plot(P_values, NMSE_dB_1D, '-s', 'Color', colors(1,:), 'LineWidth', 2, 'MarkerSize', 8);
+hold on;
+plot(P_values, NMSE_dB_2D, '-o', 'Color', colors(2,:), 'LineWidth', 2, 'MarkerSize', 8);
+plot(P_values, NMSE_dB_hierarchical_1D, '-^', 'Color', colors(3,:), 'LineWidth', 2, 'MarkerSize', 8);
+plot(P_values, NMSE_dB_hierarchical_2D, '-v', 'Color', colors(4,:), 'LineWidth', 2, 'MarkerSize', 8);
+plot(P_values, NMSE_dB_OMP, '-d', 'Color', colors(5,:), 'LineWidth', 2, 'MarkerSize', 8);
+plot(P_values, NMSE_dB_traditional, '-p', 'Color', colors(6,:), 'LineWidth', 2, 'MarkerSize', 8);
+grid on;
+xlabel('Number of Paths P', 'FontSize', 12, 'FontWeight', 'bold');
+ylabel('NMSE (dB)', 'FontSize', 12, 'FontWeight', 'bold');
+legend('1D SBL', '4D SBL', 'Hierarchical 1D SBL', 'Hierarchical 4D SBL', 'OMP', 'Traditional', 'Location', 'best');
+set(gca, 'FontSize', 11, 'XTick', [3, 6, 9, 12, 15]);
+xlim([3, 15]);
+
+%% threshold
+NMSE_dB_hierarchical_1D = [-22.307877832236773;-23.321289363416298;-26.160896145639697;-25.647446247343860;-23.966810980515994];
+NMSE_dB_hierarchical_2D = [-19.797030660511815;-19.053113543206916;-20.452862126864886;-20.789433260275313;-19.994164706908710];
+
+colors = [234,174,31;     % 黄色 - 分层1D SBL
+          215,94,59]/256; % 橙色 - 分层2D SBL
+
+% 创建包含4个子图的图形
+figure('Position', [100, 100, 800, 600]);
+
+% 子图1: NMSE性能对比
+plot(threshold_ratio_values, NMSE_dB_hierarchical_1D, '-^', 'Color', colors(1,:), 'LineWidth', 2, 'MarkerSize', 8);
+hold on;
+plot(threshold_ratio_values, NMSE_dB_hierarchical_2D, '-v', 'Color', colors(2,:), 'LineWidth', 2, 'MarkerSize', 8);
+grid on;
+xlabel('Threshold Ratio', 'FontSize', 12, 'FontWeight', 'bold');
+ylabel('NMSE (dB)', 'FontSize', 12, 'FontWeight', 'bold');
+legend('Hierarchical 1D SBL', 'Hierarchical 4D SBL', 'Location', 'best');
+set(gca, 'FontSize', 11);
+ylim([-27, -18]);
